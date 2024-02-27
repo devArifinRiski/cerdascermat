@@ -41,7 +41,7 @@ $.widget('javobyte.rouletteWheel', {
         pointer: $('<img>').attr('src', 'img/pointer.png')[0],
         selected: function () {},
         spinText: '',
-        colors: [],
+        colors: ['red'],
     },
 
     _options: {
@@ -142,7 +142,7 @@ $.widget('javobyte.rouletteWheel', {
         var i = 0;
 
 
-        ctx.fillStyle = '#388AE8';
+        ctx.fillStyle = '#fff';
 
         ctx.save();
 
@@ -210,10 +210,11 @@ $.widget('javobyte.rouletteWheel', {
 
         // Replace the spin text with an image loaded from a URL
         var spinButtonImg = new Image();
+        // spinButtonImg.src = 'img/transparent.png'; // Provide the URL of your image
         spinButtonImg.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Logo_of_People%27s_Consultative_Assembly_Indonesia.png/1200px-Logo_of_People%27s_Consultative_Assembly_Indonesia.png'; // Provide the URL of your image
         spinButtonImg.onload = function () {
         var aspectRatio = spinButtonImg.width / spinButtonImg.height;
-        var resizedWidth = 175; // Width to resize the image to
+        var resizedWidth = 230; // Width to resize the image to
         var resizedHeight = resizedWidth / aspectRatio;
         ctx.drawImage(spinButtonImg, cx - resizedWidth / 2, cy - resizedHeight / 2, resizedWidth, resizedHeight);
     };
