@@ -1,4 +1,5 @@
 let winner = '';
+
 function easeOut(t, b, c, d) {
     var ts = (t /= d) * t;
     var tc = ts * t;
@@ -38,9 +39,8 @@ $.widget('javobyte.rouletteWheel', {
 
     options: {
         pointer: $('<img>').attr('src', 'img/pointer.png')[0],
-        selected: function () {
-        },
-        spinText: 'SPIN',
+        selected: function () {},
+        spinText: '',
         colors: [],
     },
 
@@ -93,8 +93,7 @@ $.widget('javobyte.rouletteWheel', {
                 if (e.pageX || e.pageY) {
                     x = e.pageX;
                     y = e.pageY;
-                }
-                else {
+                } else {
                     x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
                     y = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
                 }
@@ -206,7 +205,18 @@ $.widget('javobyte.rouletteWheel', {
         }
 
         ctx.fillStyle = 'black';
+
         ctx.drawImage(this.options.pointer, cx - 25, cy - radius - 45, 50, 50);
+
+        // Replace the spin text with an image loaded from a URL
+        var spinButtonImg = new Image();
+        spinButtonImg.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Logo_of_People%27s_Consultative_Assembly_Indonesia.png/1200px-Logo_of_People%27s_Consultative_Assembly_Indonesia.png'; // Provide the URL of your image
+        spinButtonImg.onload = function () {
+        var aspectRatio = spinButtonImg.width / spinButtonImg.height;
+        var resizedWidth = 175; // Width to resize the image to
+        var resizedHeight = resizedWidth / aspectRatio;
+        ctx.drawImage(spinButtonImg, cx - resizedWidth / 2, cy - resizedHeight / 2, resizedWidth, resizedHeight);
+    };
 
         if (!this.is_rotating()) {
             ctx.save();
@@ -215,8 +225,6 @@ $.widget('javobyte.rouletteWheel', {
             ctx.fillText(text, cx - ctx.measureText(text).width / 2, cy + 10);
             ctx.restore();
         }
-
-
     },
 
     _rotate: function () {
@@ -246,57 +254,42 @@ $.widget('javobyte.rouletteWheel', {
         this._rotate();
     },
 
-    // stop: function () {
-    //     this._options.rotating = false;
-    //     clearTimeout(this._options.spinTimeout);
-    //     this._draw();
-
-    //     var degrees = this._options.currentAngle * 180 / Math.PI + 90;
-    //     var arcd = this._options.arc * 180 / Math.PI;
-    //     var index = Math.floor((360 - degrees % 360) / arcd);
-
-
-    //     var keys = Object.keys(this.options.items);
-    //     var key = keys[index];
-    //     this.options.selected(key, this.options.items[key]);
-    // }
-
     stop: function () {
-    this._options.rotating = false;
-    clearTimeout(this._options.spinTimeout);
-    this._draw();
+        this._options.rotating = false;
+        clearTimeout(this._options.spinTimeout);
+        this._draw();
 
-    var degrees = this._options.currentAngle * 180 / Math.PI + 90;
-    var arcd = this._options.arc * 180 / Math.PI;
-    var index = Math.floor((360 - degrees % 360) / arcd);
+        var degrees = this._options.currentAngle * 180 / Math.PI + 90;
+        var arcd = this._options.arc * 180 / Math.PI;
+        var index = Math.floor((360 - degrees % 360) / arcd);
 
-    var keys = Object.keys(this.options.items);
-    var key = keys[index];
-    var selectedItem = this.options.items[key];
-    console.log(this.options.items[key])
-    winner = this.options.items[key]
+        var keys = Object.keys(this.options.items);
+        var key = keys[index];
+        var selectedItem = this.options.items[key];
+        console.log(this.options.items[key])
+        winner = this.options.items[key]
 
-    // Remove the selected item from the options
-    delete this.options.items[key];
+        // Remove the selected item from the options
+        delete this.options.items[key];
 
-    // Redraw the wheel without the removed item
-    this._options.itemsToDraw--;
+        // Redraw the wheel without the removed item
+        this._options.itemsToDraw--;
 
-    // Adjust colors array if necessary
-    if (this.options.colors.length !== this._options.itemsToDraw) {
-        var colors = [];
-        for (var i = 0; i < this._options.itemsToDraw; i++) {
-            var color = getColor(i, this._options.itemsToDraw);
-            colors.push('rgb(' + color[0] + ',' + color[1] + ',' + color[2] + ')');
+        // Adjust colors array if necessary
+        if (this.options.colors.length !== this._options.itemsToDraw) {
+            var colors = [];
+            for (var i = 0; i < this._options.itemsToDraw; i++) {
+                var color = getColor(i, this._options.itemsToDraw);
+                colors.push('rgb(' + color[0] + ',' + color[1] + ',' + color[2] + ')');
+            }
+            this.options.colors = colors;
         }
-        this.options.colors = colors;
+
+        // Redraw the wheel with updated options
+        this._options.arc = 2 * Math.PI / this._options.itemsToDraw;
+        this._draw();
+
+        // Trigger the selected event
+        this.options.selected(key, selectedItem);
     }
-
-    // Redraw the wheel with updated options
-    this._options.arc = 2 * Math.PI / this._options.itemsToDraw;
-    this._draw();
-
-    // Trigger the selected event
-    this.options.selected(key, selectedItem);
-}
 });
