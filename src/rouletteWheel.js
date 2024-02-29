@@ -36,12 +36,11 @@ function getColor(index, total) {
 }
 
 $.widget('javobyte.rouletteWheel', {
-
     options: {
-        pointer: $('<img>').attr('src', 'img/pointer.png')[0],
+        pointer: $('<img>').attr('src', 'img/pointerv2.png')[0],
         selected: function () {},
         spinText: '',
-        colors: ['red'],
+        items: [], // Modify to include item names and colors
     },
 
     _options: {
@@ -53,23 +52,20 @@ $.widget('javobyte.rouletteWheel', {
     },
 
     _create: function () {
-        if (!this.options.items) throw 'No items provided';
+        if (!this.options.items.length) throw 'No items provided';
 
         var canvas = this.element[0];
 
         if (canvas.getContext) {
             this._options.ctx = canvas.getContext('2d');
 
-            this._options.itemsToDraw = Object.keys(this.options.items).length;
+            this._options.itemsToDraw = this.options.items.length;
 
-            if (this.options.colors.length !== this._options.itemsToDraw) {
-                var colors = [];
-                for (var i = 0; i < this._options.itemsToDraw; i++) {
-                    var color = getColor(i, this._options.itemsToDraw);
-                    colors.push('rgb(' + color[0] + ',' + color[1] + ',' + color[2] + ')');
-                }
-                this.options.colors = colors;
-            }
+            // Adjust colors array if necessary
+            var colors = this.options.items.map(function (item) {
+                return item.color;
+            });
+            this.options.colors = colors;
 
             var w, h;
             w = this.element.width();
@@ -79,7 +75,6 @@ $.widget('javobyte.rouletteWheel', {
             this._options.centerX = w / 2;
             this._options.centerY = h / 2;
 
-
             this._options.radius = base * 0.8 / 2;
             this._options.innerRadius = base * 0.3 / 2;
             this._options.textRadius = (this._options.radius + this._options.innerRadius) / 2;
@@ -87,7 +82,6 @@ $.widget('javobyte.rouletteWheel', {
 
             var widget = this;
             this.element.click(function (e) {
-
                 var x;
                 var y;
                 if (e.pageX || e.pageY) {
@@ -108,7 +102,6 @@ $.widget('javobyte.rouletteWheel', {
                         widget.spin();
                     }
                 }
-
             });
         } else {
             throw 'Canvas not supported';
@@ -136,11 +129,10 @@ $.widget('javobyte.rouletteWheel', {
         ctx.strokeStyle = "black";
         ctx.lineWidth = 2;
 
-        ctx.font = 'bold 20px Helvetica, Arial';
+        ctx.font = 'bold 30px Helvetica, Arial';
 
         var text, textWidth;
         var i = 0;
-
 
         ctx.fillStyle = '#fff';
 
@@ -167,17 +159,16 @@ $.widget('javobyte.rouletteWheel', {
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 0;
 
-        ctx.arc(cx, cy, innerRadius + 3, 0, 2 * Math.PI);
+        // ctx.arc(cx, cy, innerRadius + 3, 0, 2 * Math.PI);
 
         ctx.stroke();
 
         ctx.restore();
 
-
-        for (var key in this.options.items) {
+        for (var item of this.options.items) {
             var angle = currentAngle + i * arc;
 
-            ctx.fillStyle = this.options.colors[i];
+            ctx.fillStyle = item.color;
 
             ctx.beginPath();
             ctx.arc(cx, cy, radius, angle, angle + arc, false);
@@ -189,14 +180,13 @@ $.widget('javobyte.rouletteWheel', {
 
             ctx.fillStyle = 'black';
 
-            text = this.options.items[key];
+            text = item.name;
             textWidth = ctx.measureText(text).width;
 
             ctx.translate(cx + Math.cos(angle + arc / 2) * textRadius,
                 cy + Math.sin(angle + arc / 2) * textRadius);
 
             ctx.rotate(angle + arc / 2);
-
 
             ctx.fillText(text, textWidth > radius - innerRadius ? innerRadius - textRadius : -textWidth / 2, 0, radius - innerRadius);
 
@@ -206,18 +196,18 @@ $.widget('javobyte.rouletteWheel', {
 
         ctx.fillStyle = 'black';
 
-        ctx.drawImage(this.options.pointer, cx - 25, cy - radius - 45, 50, 50);
+        ctx.drawImage(this.options.pointer, cx + 325, cy - radius + 300, 50, 50);
 
         // Replace the spin text with an image loaded from a URL
         var spinButtonImg = new Image();
         // spinButtonImg.src = 'img/transparent.png'; // Provide the URL of your image
         spinButtonImg.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Logo_of_People%27s_Consultative_Assembly_Indonesia.png/1200px-Logo_of_People%27s_Consultative_Assembly_Indonesia.png'; // Provide the URL of your image
         spinButtonImg.onload = function () {
-        var aspectRatio = spinButtonImg.width / spinButtonImg.height;
-        var resizedWidth = 230; // Width to resize the image to
-        var resizedHeight = resizedWidth / aspectRatio;
-        ctx.drawImage(spinButtonImg, cx - resizedWidth / 2, cy - resizedHeight / 2, resizedWidth, resizedHeight);
-    };
+            var aspectRatio = spinButtonImg.width / spinButtonImg.height;
+            var resizedWidth = 230; // Width to resize the image to
+            var resizedHeight = resizedWidth / aspectRatio;
+            ctx.drawImage(spinButtonImg, cx - resizedWidth / 2, cy - resizedHeight / 2, resizedWidth, resizedHeight);
+        };
 
         if (!this.is_rotating()) {
             ctx.save();
@@ -260,18 +250,16 @@ $.widget('javobyte.rouletteWheel', {
         clearTimeout(this._options.spinTimeout);
         this._draw();
 
-        var degrees = this._options.currentAngle * 180 / Math.PI + 90;
+        var degrees = this._options.currentAngle * 180 / Math.PI;
         var arcd = this._options.arc * 180 / Math.PI;
         var index = Math.floor((360 - degrees % 360) / arcd);
 
-        var keys = Object.keys(this.options.items);
-        var key = keys[index];
-        var selectedItem = this.options.items[key];
-        console.log(this.options.items[key])
-        winner = this.options.items[key]
+        var selectedItem = this.options.items[index];
+        console.log(selectedItem.name);
+        winner = selectedItem.name;
 
         // Remove the selected item from the options
-        delete this.options.items[key];
+        this.options.items.splice(index, 1);
 
         // Redraw the wheel without the removed item
         this._options.itemsToDraw--;
@@ -291,6 +279,6 @@ $.widget('javobyte.rouletteWheel', {
         this._draw();
 
         // Trigger the selected event
-        this.options.selected(key, selectedItem);
+        this.options.selected(selectedItem.name, selectedItem);
     }
 });
