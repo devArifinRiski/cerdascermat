@@ -37,7 +37,7 @@ function getColor(index, total) {
 
 $.widget('javobyte.rouletteWheel', {
     options: {
-        pointer: $('<img>').attr('src', 'img/pointerv2.png')[0],
+        pointer: $('<img>').attr('src', 'img/pointerv3.png')[0],
         selected: function () {},
         spinText: '',
         items: [], // Modify to include item names and colors
@@ -159,7 +159,7 @@ $.widget('javobyte.rouletteWheel', {
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 0;
 
-        // ctx.arc(cx, cy, innerRadius + 3, 0, 2 * Math.PI);
+        ctx.arc(cx, cy, innerRadius + 3, 0, 2 * Math.PI);
 
         ctx.stroke();
 
@@ -196,7 +196,7 @@ $.widget('javobyte.rouletteWheel', {
 
         ctx.fillStyle = 'black';
 
-        ctx.drawImage(this.options.pointer, cx + 325, cy - radius + 300, 50, 50);
+        ctx.drawImage(this.options.pointer, cx + 320, cy - radius + 300, 50, 50);
 
         // Replace the spin text with an image loaded from a URL
         var spinButtonImg = new Image();
